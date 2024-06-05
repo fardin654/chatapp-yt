@@ -5,8 +5,8 @@
     "main": "index.js",
     "scripts": {
       "start": "node server/index.js",
-      "server": "nodemon server/index.js",
-      "build": "npm install && npm install --prefix public && npm run build --prefix public"
+      "dev": "nodemon index.js",
+      "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend"
     },
     "keywords": [
       "mern",
