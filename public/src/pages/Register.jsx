@@ -94,7 +94,7 @@ function Register() {
         <form onSubmit={handleSubmit}>
             <div className="brand">
                 <img src={logo} alt="Logo"/>
-                <h1>Snappy</h1>
+                <h1>YouChat</h1>
             </div>
             <input 
                 type="text"
@@ -143,7 +143,9 @@ const FormContainer = styled.div`
   justify-content: center;
   gap: 1rem;
   align-items: center;
-  background-color: #131324;
+  // background-color: #131324;
+  background-color: black;
+  background-image: url("https://www.transparenttextures.com/patterns/45-degree-fabric-light.png");
   .brand {
     display: flex;
     align-items: center;
@@ -159,6 +161,7 @@ const FormContainer = styled.div`
   }
 
   form {
+    backdrop-filter: blur(5px);
     display: flex;
     flex-direction: column;
     gap: 2rem;

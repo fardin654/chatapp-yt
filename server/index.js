@@ -14,7 +14,8 @@ app.use(express.json());
 app.use("/api/auth",userRoutes); 
 app.use("/api/messages",messagesRoute); 
 
-mongoose.connect("mongodb+srv://fardinmd654:test%401234@cluster0.pzp0j03.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",{
+mongoose.connect(process.env.MONGO_URL
+,{
 }).then(()=>{
     console.log("DB connected successfully");
 }).catch((err)=>{
@@ -28,8 +29,7 @@ const server = app.listen(process.env.PORT,()=>{
 
 const io = socket(server,{
     cors:{
-        origin:"http://deploy-mern-1whq.vercel.app",
-        // origin:"localhost:3000",
+        origin:"http://localhost:3000",
         methods: ["POST","GET"],
         credentials:true
     },
@@ -39,13 +39,42 @@ global.onlineUsers = new Map();
 io.on("connection",(socket)=>{
     global.chatSocket=socket;
     socket.on("add-user",(userId)=>{
-        onlineUsers.set(userId,socket.id);
+        global.onlineUsers.set(userId,socket.id);
     });
-
+    let temp={};
+    for(let key of onlineUsers.keys()){
+        temp[key]=true;
+    }
+    io.sockets.emit("onlineUsers",temp);
+   
     socket.on("send-msg",(data)=>{
         const sendUserSocket=onlineUsers.get(data.to);
-        if(sendUserSocket){
+        if(sendUserSocket!=undefined){
             socket.to(sendUserSocket).emit("msg-received",data.message);
         }
     });
+
+    socket.on("logout",(data)=>{
+        const val = data._id;
+        onlineUsers.delete(val);
+        let temp={};
+        for(let key of onlineUsers.keys()){
+            temp[key]=true;
+        }
+        io.sockets.emit("onlineUsers",temp);
+    });
+
+    socket.on("disconnect", () => { 
+        global.onlineUsers.forEach((value, key) => {
+            if (value === socket.id) {
+                global.onlineUsers.delete(key);
+                return;
+            }
+        });
+        let temp={};
+        for(let key of onlineUsers.keys()){
+            temp[key]=true;
+        }
+        io.sockets.emit("onlineUsers",temp);
+        });
 });

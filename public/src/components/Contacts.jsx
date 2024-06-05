@@ -2,11 +2,26 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Logo from "../assets/logo.svg";
 import Logout from "./Logout";
+import {io} from "socket.io-client";
+import { host } from "../utils/APIRoutes";
 
-function Contacts({ contacts, currentUser,changeChat }) {
+
+function Contacts({ contacts, currentUser,changeChat}) {
   const [currentUserName, setCurrentUserName] = useState(undefined);
   const [currentUserImage, setCurrentUserImage] = useState(undefined);
   const [currentSelected, setCurrentSelected] = useState(undefined);
+  const [onlineUsers, setOnlineUsers] = useState({});
+
+  useEffect(()=>{
+    const socket = io(host);
+    socket.on("onlineUsers",(data)=>{
+      setOnlineUsers(data);
+    })
+    return () => {
+      socket.disconnect();
+    };
+},[])
+
 
   useEffect(() => {
     if(currentUser){
@@ -20,13 +35,14 @@ function Contacts({ contacts, currentUser,changeChat }) {
     changeChat(contact);
   }
 
+
   return (
     <>
       {currentUserName && currentUserImage && (
         <Container>
           <div className="brand">
             <img src={Logo} alt="logo" />
-            <h3>snappy</h3>
+            <h3>YouChat</h3>
           </div>
           <div className="contacts">
             {contacts.map((contact, index) => {
@@ -44,6 +60,8 @@ function Contacts({ contacts, currentUser,changeChat }) {
                   <div className="username">
                     <h3>{contact.username}</h3>
                   </div>
+                   {onlineUsers[contact._id] && <GreenDot><div></div></GreenDot>} 
+
                 </div>
               );
             })}
@@ -60,7 +78,7 @@ function Contacts({ contacts, currentUser,changeChat }) {
             <div className="username">
               <h2>{currentUserName}</h2>
             </div>
-            <Logout/>
+            <Logout currentUser={currentUser}/>
           </div>
         </Container>
       )}
@@ -69,6 +87,8 @@ function Contacts({ contacts, currentUser,changeChat }) {
 }
 
 const Container = styled.div`
+border-top-left-radius:10px;
+border-bottom-left-radius:10px;
 display: grid;
 grid-template-rows: 10% 75% 15%;
 overflow: hidden;
@@ -129,12 +149,12 @@ background-color: #080420;
   }
 
   .contact.selected {
-    background-color: #9a86f3;
+    background-color:#3b5998;
   }
 }
 
 .current-user {
-  background-color: #0d0d30;
+  background-color: #ffffff39;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -161,7 +181,15 @@ background-color: #080420;
     }
   }
 }
+`
 
+const GreenDot = styled.div`
+  div{
+    height:10px;
+    width:10px;
+    border-radius:50%;
+    background-color: #00FF00;
+  }
 
 `
 export default Contacts

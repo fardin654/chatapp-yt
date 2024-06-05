@@ -2,18 +2,22 @@ import React from 'react';
 import styled from "styled-components";
 import axios from "axios";
 import {useNavigate} from "react-router-dom";
-import {BiPowerOff} from 'react-icons/bi';
+import LogoutIcon from '@mui/icons-material/Logout';
+import {io} from "socket.io-client";
+import { host } from "../utils/APIRoutes";
 
-function Logout() {
+function Logout({currentUser}) {
     const navigate=useNavigate();
     async function handleClick(){
         localStorage.clear();
+        const socket = io(host);
+        socket.emit("logout",currentUser);
         navigate('/login');
 
     }
   return (
     <Button onClick={handleClick}>
-      <BiPowerOff/>
+      <LogoutIcon/>
     </Button>
   );
 }
@@ -24,7 +28,7 @@ justify-content: center;
 align-items: center;
 padding: 0.5rem;
 border-radius: 0.5rem;
-background-color: #9a86f3;
+background-color: transparent;
 border: none;
 cursor: pointer;
 svg {

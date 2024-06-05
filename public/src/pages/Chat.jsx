@@ -63,7 +63,7 @@ function Chat() {
     <>
     <Container>
       <div className="container">
-        <Contacts contacts={contacts} currentUser={currentUser} changeChat={handleChatChange}/>
+        <Contacts contacts={contacts} currentUser={currentUser} changeChat={handleChatChange} socket={socket}/>
         {(isLoaded && currentChat===undefined)?<Welcome currentUser={currentUser}/>:<ChatContainer currentChat={currentChat} currentUser={currentUser} socket={socket}/>}
         
       </div>
@@ -81,8 +81,11 @@ flex-direction:column;
 justify-content:center;
 align-items:center;
 gap:1rem;
-background-color:#131324;
+// background-color:#131324;
+background-color: black;
+background-image: url("https://www.transparenttextures.com/patterns/45-degree-fabric-light.png");
 .container{
+  border-radius:10px;
   height:85vh;
   width:85vw;
   background-color:#00000076;

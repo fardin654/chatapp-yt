@@ -102,7 +102,9 @@ const Container = styled.div`
     gap: 2rem;
     height: 100vh;
     width: 100vw;
-    background-color: #131324;
+    // background-color: #131324;
+    background-color: black;
+    background-image: url("https://www.transparenttextures.com/patterns/45-degree-fabric-light.png");
 
     .title-container {
         h1 {
