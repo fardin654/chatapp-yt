@@ -13,7 +13,7 @@ function Contacts({ contacts, currentUser,changeChat}) {
   const [onlineUsers, setOnlineUsers] = useState({});
 
   useEffect(()=>{
-    const socket = io(host);
+    const socket = io("https://chatapp-yt-c4h4.onrender.com");
     socket.on("onlineUsers",(data)=>{
       setOnlineUsers(data);
     })
