@@ -14,7 +14,9 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/auth",userRoutes); 
 app.use("/api/messages",messagesRoute); 
-// -----Code for Deployement---
+
+// --------------------------deployment------------------------------
+
 const __dirname1 = path.resolve();
 
 if (process.env.NODE_ENV === "production") {
@@ -28,6 +30,8 @@ if (process.env.NODE_ENV === "production") {
     res.send("API is running..");
   });
 }
+
+// --------------------------deployment------------------------------
 
 mongoose.connect(process.env.MONGO_URL
 ,{
@@ -44,7 +48,8 @@ const server = app.listen(process.env.PORT,()=>{
 
 const io = socket(server,{
     cors:{
-        origin:"https://chatapp-yt-c4h4.onrender.com",
+        // origin:"https://chatapp-yt-c4h4.onrender.com",
+        origin:"localhost:3000",
         methods: ["POST","GET"],
         credentials:true
     },
