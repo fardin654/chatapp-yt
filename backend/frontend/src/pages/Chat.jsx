@@ -30,7 +30,7 @@ function Chat() {
 
   useEffect(()=>{
     if(currentUser){
-      socket.current=io("https://chatapp-yt-c4h4.onrender.com");
+      socket.current=io(host);
       socket.current.emit("add-user",currentUser._id);
     }
   })
