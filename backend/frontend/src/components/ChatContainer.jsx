@@ -53,6 +53,7 @@ function ChatContainer({ currentChat, currentUser, socket }) {
   useEffect(() => {
     if (socket.current) {
       socket.current.on("msg-received", (msg) => {
+        console.log(msg);
         setArrivalMessage({ fromSelf: false, message: msg, createdAt: new Date() });
       });
     }
