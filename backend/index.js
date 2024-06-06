@@ -67,8 +67,10 @@ io.on("connection",(socket)=>{
     io.sockets.emit("onlineUsers",temp);
    
     socket.on("send-msg",(data)=>{
+        console.log("message sent");
         const sendUserSocket=onlineUsers.get(data.to);
         if(sendUserSocket!=undefined){
+            console.log("Message being received");
             socket.to(sendUserSocket).emit("msg-received",data.message);
         }
     });
