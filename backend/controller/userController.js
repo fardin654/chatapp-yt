@@ -11,6 +11,11 @@ module.exports.register = async (req,res,next) => {
         if(emailCheck)   
             return res.json({msg:"Email already in use",status:false});
 
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if(emailRegex.test(email)==false){
+            return res.json({msg:"Email invalid",status:false});
+        }
+
         const hashedPassword = await bcrypt.hash(password,10);
         const user = await User.create({
             email,username,password:hashedPassword
