@@ -14,6 +14,7 @@ export default function SetAvatar() {
     const [avatars, setAvatars] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedAvatar, setSelectedAvatar] = useState(undefined);
+    const [loading, setLoading] = useState(false);
 
     const toastOptions = {
         position: "bottom-right",
@@ -24,21 +25,29 @@ export default function SetAvatar() {
         closeOnClick: true,
     };
 
-    async function setProfilePicture(){
-        if(selectedAvatar===undefined){
-            toast.error("Select an Avatar",toastOptions);
-        }else{
+    async function setProfilePicture() {
+        if (selectedAvatar === undefined) {
+            toast.error("Select an Avatar", toastOptions);
+        } else {
+            setLoading(true);
             const user = await JSON.parse(localStorage.getItem("chat-app-user"));
-            const {data} = await axios.post(`${setAvatarRoute}/${user._id}`,{
-                image:avatars[selectedAvatar],
+            
+            const svgResponse = await axios.get(avatars[selectedAvatar], {
+                responseType: 'text',
             });
-            if(data.isSet){
+            const base64Image = Buffer.from(svgResponse.data).toString('base64');
+
+            const { data } = await axios.post(`${setAvatarRoute}/${user._id}`, {
+                image: base64Image,
+            });
+
+            if (data.isSet) {
                 user.isAvatarImageSet = true;
                 user.avatarImage = data.image;
-                localStorage.setItem("chat-app-user",JSON.stringify(user));
+                localStorage.setItem("chat-app-user", JSON.stringify(user));
                 navigate("/");
-            }else{
-                toast.error("Error Setting Avatar. Please Try Again",toastOptions);
+            } else {
+                toast.error("Error Setting Avatar. Please Try Again", toastOptions);
             }
         }
     }
@@ -50,18 +59,12 @@ export default function SetAvatar() {
       },[])
 
     useEffect(() => {
-        const fetchAvatars = async () => {
-            const data = [];
-            for (let i = 0; i < 5; i++) {
-                const response = await axios.get(`${api}/${Math.round(Math.random() * 1000)}`);
-                const buffer = Buffer.from(response.data);
-                data.push(buffer.toString("base64"));
-            }
-            setAvatars(data);
-            setIsLoading(false);
-        };
-
-        fetchAvatars();
+        const data = [];
+        for (let i = 0; i < 5; i++) {
+            data.push(`https://api.dicebear.com/7.x/avataaars/svg?seed=${Math.floor(Math.random() * 1000)}`);
+        }
+        setAvatars(data);
+        setIsLoading(false);
     }, []);
 
     return (
@@ -81,11 +84,13 @@ export default function SetAvatar() {
                                     className={`avatar ${selectedAvatar === index ? 'selected' : ''}`}
                                     onClick={() => setSelectedAvatar(index)}
                                 >
-                                    <img src={`data:image/svg+xml;base64,${avatar}`} alt="avatar" />
+                                    <img src={avatar} alt="avatar" />
                                 </div>
                             ))}
                         </div>
-                        <button className="submit-btn" onClick={setProfilePicture}>Select Avatar</button>
+                            <button className="submit-btn" onClick={setProfilePicture} disabled={loading}>
+                            {loading ? <span className="spinner" /> : "Select Avatar"}
+                            </button>
                     </>
                 )}
             </Container>
@@ -104,8 +109,12 @@ const Container = styled.div`
     width: 100vw;
     // background-color: #131324;
     background-color: black;
-    background-image: url("https://www.transparenttextures.com/patterns/45-degree-fabric-light.png");
-
+    background-color: #2a2a2a; /* medium‑dark gray */
+    background-image:
+        radial-gradient(circle, #bbbbbb 1px, transparent 1px),
+        radial-gradient(circle, #bbbbbb 1px, transparent 1px);
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
     .title-container {
         h1 {
             color: white;
@@ -123,7 +132,7 @@ const Container = styled.div`
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: 0.5s ease-in-out;
+            transition: none;
             cursor: pointer;
 
             img {
@@ -139,17 +148,41 @@ const Container = styled.div`
     .loader {
         height: 6rem;
     }
+
     button {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
         background-color: #4e0eff;
         color: white;
         padding: 1rem 2rem;
         border: none;
         border-radius: 0.5rem;
         cursor: pointer;
-        transition: 0.3s ease-in-out;
+        transition: none;
 
         &:hover {
             background-color: #3a0ccc;
+        }
+    }
+
+    .spinner {
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top: 3px solid #fff;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+
+
+    @keyframes spin {
+        to {
+        transform: rotate(360deg);
         }
     }
 `;

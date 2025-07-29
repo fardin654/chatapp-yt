@@ -83,8 +83,12 @@ align-items:center;
 gap:1rem;
 // background-color:#131324;
 background-color: black;
-background-image: url("https://www.transparenttextures.com/patterns/45-degree-fabric-light.png");
-.container{
+background-color: #2a2a2a; 
+  background-image:
+    radial-gradient(circle, #bbbbbb 1px, transparent 1px),
+    radial-gradient(circle, #bbbbbb 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;.container{
   border-radius:10px;
   height:85vh;
   width:85vw;

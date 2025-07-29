@@ -139,28 +139,45 @@ const Container = styled.div`
   grid-template-rows: 10% 80% 10%;
   gap: 0.1rem;
   overflow: hidden;
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(3px);
+  background-color: transparent;
+
   @media screen and (min-width: 720px) and (max-width: 1080px) {
     grid-template-rows: 15% 70% 15%;
   }
   .chat-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     padding: 0.5rem;
+    border-bottom: 2px solid white;
     padding-top: 1.5rem;
+    hright: 5rem;
+    background-filter: blur(3px);
     .user-details {
       display: flex;
       align-items: center;
       gap: 1rem;
+      position: relative;
       .avatar {
+        height: 3rem;
+        width: 3rem;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        background-color:gray;
+        border: 2px solid white;
+        position: relative;
+        bottom: 0.4rem;
         img {
-          height: 3rem;
+          height: 2.5rem;
         }
       }
       .username {
         h3 {
           color: white;
+          position: relative;
+          bottom: 0.2rem;
         }
       }
     }

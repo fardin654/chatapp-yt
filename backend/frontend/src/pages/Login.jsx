@@ -9,7 +9,7 @@ import { loginRoute } from '../utils/APIRoutes.js';
 
 
 function Login () {
-
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const [values,setValues] = useState({
         username:"",
@@ -34,6 +34,7 @@ function Login () {
     async function handleSubmit(event){
         event.preventDefault();
         if(handleValidation()){
+          setLoading(true);
             const {username,password} = values;
             const {data} = await axios.post(loginRoute,{
                 username,
@@ -97,9 +98,8 @@ function Login () {
                 onChange={handleChange}
                 value={values.password}
                 />
-            <button type="submit">Login</button>
-            <span>Don't have an Account?<a href="/register">Register</a>
-</span>
+            <button type="submit" disabled={loading}>{loading ? <span className="spinner"></span> : "Login"}</button>
+            <span>Don't have an Account?<a href="/register">Register</a></span>
         </form>
     </FormContainer>
     <ToastContainer/>
@@ -113,70 +113,122 @@ const FormContainer = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 1rem;
   align-items: center;
-  // background-color: #131324;
-  background-color: black;
-  background-image: url("https://www.transparenttextures.com/patterns/45-degree-fabric-light.png");
+  background-color: #1f1f1f;
+  background-image:
+    radial-gradient(circle, #444 1px, transparent 1px),
+    radial-gradient(circle, #444 1px, transparent 1px);
+  background-size: 30px 30px;
+  background-position: 0 0, 15px 15px;
+
   .brand {
     display: flex;
     align-items: center;
     gap: 1rem;
     justify-content: center;
     img {
-      height: 5rem;
+      height: 4rem;
     }
     h1 {
-      color: white;
+      color: #ffffff;
       text-transform: uppercase;
+      font-size: 2rem;
+      letter-spacing: 2px;
     }
   }
 
   form {
-    backdrop-filter: blur(5px);
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    background-color: #00000076;
-    border-radius: 2rem;
-    padding: 3rem 5rem;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    border-radius: 1.5rem;
+    padding: 3rem 4rem;
+    width: 90%;
+    max-width: 400px;
   }
+
   input {
-    background-color: transparent;
+    background-color: rgba(255, 255, 255, 0.05);
     padding: 1rem;
-    border: 0.1rem solid #4e0eff;
-    border-radius: 0.4rem;
+    border: 1px solid #4e0eff;
+    border-radius: 0.5rem;
     color: white;
-    width: 100%;
     font-size: 1rem;
+    transition: all 0.3s ease-in-out;
     &:focus {
-      border: 0.1rem solid #997af0;
+      border-color: #997af0;
       outline: none;
+      background-color: rgba(255, 255, 255, 0.08);
     }
   }
+
   button {
-    background-color: #4e0eff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: linear-gradient(to right, #4e0eff, #997af0);
     color: white;
-    padding: 1rem 2rem;
+    padding: 1rem;
     border: none;
+    border-radius: 0.5rem;
     font-weight: bold;
-    cursor: pointer;
-    border-radius: 0.4rem;
     font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     text-transform: uppercase;
     &:hover {
-      background-color: #4e0eff;
+      transform: scale(1.03);
+      box-shadow: 0 0 12px #4e0effa6;
     }
   }
+
   span {
-    color: white;
+    color: #ddd;
+    text-align: center;
     text-transform: uppercase;
+    font-size: 0.9rem;
     a {
       color: #4e0eff;
       text-decoration: none;
       font-weight: bold;
+      margin-left: 0.3rem;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+  }
+
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+
+  @media screen and (max-width: 480px) {
+    form {
+      padding: 2rem;
+    }
+    .brand h1 {
+      font-size: 1.5rem;
     }
   }
 `;
+
 
 export default Login;
