@@ -83,13 +83,13 @@ function Contacts({ contacts, currentUser,changeChat}) {
               <img
                 src={`data:image/svg+xml;base64,${currentUserImage}`}
                 alt="avatar"
+                onClick={goToAvatarSetup}
               />
             </div>
             <div className="username">
               <h2>{currentUserName}</h2>
             </div>
             <div className="actions">
-              <button className="avatar-btn" onClick={goToAvatarSetup}>Change Avatar</button>
               <Logout currentUser={currentUser} />
             </div>
           </div>
@@ -191,6 +191,7 @@ const Container = styled.div`
     border-radius: 50%;
     border: 2px solid white;
     background-color: #aaaaaaff;
+    cursor: pointer;
   }
 
   .username {

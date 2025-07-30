@@ -67,6 +67,21 @@ export default function SetAvatar() {
         setIsLoading(false);
     }, []);
 
+    const generateAvatars = () => {
+        const data = [];
+        for (let i = 0; i < 5; i++) {
+            data.push(`https://api.dicebear.com/7.x/avataaars/svg?seed=${Math.floor(Math.random() * 1000)}`);
+        }
+        setAvatars(data);
+        setSelectedAvatar(undefined);
+    };
+
+    useEffect(() => {
+        generateAvatars();
+        setIsLoading(false);
+    }, []);
+
+
     return (
         <>
             <Container>
@@ -91,6 +106,8 @@ export default function SetAvatar() {
                             <button className="submit-btn" onClick={setProfilePicture} disabled={loading}>
                             {loading ? <span className="spinner" /> : "Select Avatar"}
                             </button>
+                            <button className="refresh-btn" onClick={generateAvatars}>Refresh Avatars</button>
+
                     </>
                 )}
             </Container>
@@ -178,11 +195,25 @@ const Container = styled.div`
         vertical-align: middle;
     }
 
-
-
     @keyframes spin {
         to {
         transform: rotate(360deg);
         }
     }
+
+    .refresh-btn {
+        margin-top: 1rem;
+        padding: 0.6rem 1.2rem;
+        background-color: #4e0eff;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+        border-radius: 0.4rem;
+        transition: none;
+    }
+    .refresh-btn:hover {
+        background-color: #3a0ccc;
+    }
+
 `;
