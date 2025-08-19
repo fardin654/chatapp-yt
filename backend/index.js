@@ -10,7 +10,14 @@ const path = require("path");
 const app = express();
 dotenv.config();
 
-app.use(cors());
+const corsOptions = {
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use("/api/auth",userRoutes); 
 app.use("/api/messages",messagesRoute); 
@@ -49,6 +56,7 @@ const server = app.listen(process.env.PORT,()=>{
 const io = socket(server,{
     cors:{
         origin:"https://youchatapp.onrender.com",
+        // origin:"http://localhost:3000",
         methods: ["POST","GET"],
         credentials:true
     },
@@ -73,7 +81,11 @@ io.on("connection",(socket)=>{
                 recipientSocketId: sendUserSocket,
                 message: data.message
             };
-            io.sockets.emit("msg-received", messageData);
+            io.to(sendUserSocket).emit("msg-received", {
+                from: data.from,
+                message: data.message,
+            });
+
         }
     });
 
