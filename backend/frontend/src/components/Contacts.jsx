@@ -6,9 +6,7 @@ import {io} from "socket.io-client";
 import { host } from "../utils/APIRoutes";
 import { useNavigate } from "react-router-dom";
 
-
-
-function Contacts({ contacts, currentUser,changeChat}) {
+function Contacts({ contacts, currentUser, changeChat }) {
   const [currentUserName, setCurrentUserName] = useState(undefined);
   const [currentUserImage, setCurrentUserImage] = useState(undefined);
   const [currentSelected, setCurrentSelected] = useState(undefined);
@@ -16,26 +14,24 @@ function Contacts({ contacts, currentUser,changeChat}) {
 
   const navigate = useNavigate();
 
-
-  useEffect(()=>{
-      const socket = io(host);
-      socket.on("onlineUsers",(data)=>{
-        setOnlineUsers(data);
-      })
-      return () => {
-        socket.disconnect();
-      };
-  },[])
-
+  useEffect(() => {
+    const socket = io(host);
+    socket.on("onlineUsers", (data) => {
+      setOnlineUsers(data);
+    });
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
-    if(currentUser){
-    setCurrentUserName(currentUser.username);
-    setCurrentUserImage(currentUser.avatarImage);
+    if (currentUser) {
+      setCurrentUserName(currentUser.username);
+      setCurrentUserImage(currentUser.avatarImage);
     }
-  }, [currentUser],);
+  }, [currentUser]);
 
-  function changeCurrentChat(index,contact){
+  function changeCurrentChat(index, contact) {
     setCurrentSelected(index);
     changeChat(contact);
   }
@@ -43,8 +39,6 @@ function Contacts({ contacts, currentUser,changeChat}) {
   function goToAvatarSetup() {
     navigate("/setAvatar");
   }
-
-
 
   return (
     <>
@@ -54,40 +48,55 @@ function Contacts({ contacts, currentUser,changeChat}) {
             <img src={Logo} alt="logo" />
             <h3>YouChat</h3>
           </div>
+          
+          <div className="contacts-header">
+            <h4>Contacts ({contacts.length})</h4>
+          </div>
+          
           <div className="contacts">
-            {contacts.map((contact, index) => {
-              return (
-                <div
-                  key={contact._id}
-                  className={`contact ${index === currentSelected ? "selected" : ""}`}
-                  onClick={()=>changeCurrentChat(index,contact)}
-                >
-                  <div className="avatar">
-                    <img
-                      src={`data:image/svg+xml;base64,${contact.avatarImage}`} alt="avatar"
-                    />
+            {contacts.length > 0 ? (
+              contacts.map((contact, index) => {
+                return (
+                  <div
+                    key={contact._id}
+                    className={`contact ${index === currentSelected ? "selected" : ""}`}
+                    onClick={() => changeCurrentChat(index, contact)}
+                  >
+                    <div className="avatar-container">
+                      <img
+                        src={`data:image/svg+xml;base64,${contact.avatarImage}`}
+                        alt="avatar"
+                        className="avatar"
+                      />
+                      {onlineUsers[contact._id] && <div className="online-indicator"></div>}
+                    </div>
+                    <div className="contact-info">
+                      <h3 className="username">{contact.username}</h3>
+                      <p className="status">{onlineUsers[contact._id] ? "Online" : "Offline"}</p>
+                    </div>
                   </div>
-                  <div className="username">
-                    <h3>{contact.username}</h3>
-                  </div>
-                   {onlineUsers[contact._id] && <GreenDot><div></div></GreenDot>} 
-
-                </div>
-              );
-            })}
-            
+                );
+              })
+            ) : (
+              <div className="no-contacts">
+                <p>No contacts yet</p>
+                <span>Start a conversation by adding friends</span>
+              </div>
+            )}
           </div>
           
           <div className="current-user">
-            <div className="avatar">
+            <div className="avatar-container" onClick={goToAvatarSetup}>
               <img
                 src={`data:image/svg+xml;base64,${currentUserImage}`}
                 alt="avatar"
-                onClick={goToAvatarSetup}
+                className="avatar"
               />
+              <div className="online-indicator self"></div>
             </div>
-            <div className="username">
-              <h2>{currentUserName}</h2>
+            <div className="user-info">
+              <h3 className="username">{currentUserName}</h3>
+              <p className="status">Online</p>
             </div>
             <div className="actions">
               <Logout currentUser={currentUser} />
@@ -100,193 +109,315 @@ function Contacts({ contacts, currentUser,changeChat}) {
 }
 
 const Container = styled.div`
-  border-top-left-radius: 1rem;
-  border-bottom-left-radius: 1rem;
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
   display: grid;
-  grid-template-rows: 10% 75% 15%;
+  grid-template-rows: auto 1fr auto;
+  height: 100%;
   overflow: hidden;
-  background-color: rgba(8, 4, 32, 0.85);
-  backdrop-filter: blur(6px);
-  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.05);
+  background: rgba(8, 4, 32, 0.9);
+  backdrop-filter: blur(10px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+
+  @media screen and (max-width: 768px) {
+    border-radius: 0;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
 
   .brand {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.8rem;
-    padding: 0.5rem 0;
+    padding: 1.2rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    
     img {
-      height: 2.2rem;
-      filter: drop-shadow(0 0 2px white);
+      height: 2.5rem;
+      filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
     }
+    
     h3 {
       color: white;
-      text-transform: uppercase;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      background: linear-gradient(135deg, #ffffff, #9a86f3);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  }
+
+  .contacts-header {
+    padding: 1rem 1.2rem 0.5rem;
+    
+    h4 {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.9rem;
       font-weight: 600;
-      letter-spacing: 1px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0;
     }
   }
 
   .contacts {
     display: flex;
     flex-direction: column;
-    align-items: center;
     overflow-y: auto;
-    padding: 0.5rem 0;
-    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    gap: 0.5rem;
 
     &::-webkit-scrollbar {
-      width: 0.3rem;
+      width: 4px;
     }
+    
+    &::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 2px;
+    }
+    
     &::-webkit-scrollbar-thumb {
-      background-color: #ffffff3b;
-      border-radius: 1rem;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
     }
 
     .contact {
-      background-color: #ffffff14;
-      min-height: 4.8rem;
-      width: 90%;
-      border-radius: 0.5rem;
-      padding: 0.6rem;
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.8rem;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
       cursor: pointer;
-      transition: background-color 0.3s ease, transform 0.2s ease;
+      transition: all 0.2s ease;
+      position: relative;
 
-      .avatar img {
-        height: 2.2rem;
-        border-radius: 50%;
+      .avatar-container {
+        position: relative;
+        
+        .avatar {
+          height: 2.8rem;
+          width: 2.8rem;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .online-indicator {
+          position: absolute;
+          bottom: 0.35rem;
+          right: 0;
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background-color: #00c853;
+          border: 2px solid rgba(8, 4, 32, 0.9);
+        }
       }
 
-      .username h3 {
-        color: white;
-        font-size: 1rem;
-        font-weight: 500;
+      .contact-info {
+        flex: 1;
+        min-width: 0;
+        
+        .username {
+          color: white;
+          font-size: 1rem;
+          font-weight: 500;
+          margin: 0 0 0.2rem 0;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        
+        .status {
+          color: rgba(255, 255, 255, 0.6);
+          font-size: 0.8rem;
+          margin: 0;
+        }
       }
 
       &:hover {
-        background-color: #3b5998cc;
-        transform: scale(1.02);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      &.selected {
+        background: linear-gradient(135deg, #3b5998, #2d4373);
+        
+        .username {
+          color: white;
+        }
+        
+        .status {
+          color: rgba(255, 255, 255, 0.8);
+        }
       }
     }
 
-    .contact.selected {
-      background-color: #3b5998;
+    .no-contacts {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.5);
+      
+      p {
+        font-size: 1rem;
+        margin: 0 0 0.5rem 0;
+        font-weight: 500;
+      }
+      
+      span {
+        font-size: 0.85rem;
+      }
     }
   }
 
   .current-user {
-  background-color: #ffffff1a;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.6rem 1rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-
-  .avatar img {
-    height: 3rem;
-    border-radius: 50%;
-    border: 2px solid white;
-    background-color: #aaaaaaff;
-    cursor: pointer;
-  }
-
-  .username {
-    flex: 1;
-    min-width: 0;
-
-    h2 {
-      color: white;
-      font-size: 1.5rem;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-    }
-  }
-
-  .actions {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    flex-shrink: 0;
+    gap: 0.8rem;
+    padding: 1rem 1.2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
 
-    .avatar-btn {
-      padding: 0.4rem 0.6rem;
-      font-size: 0.75rem;
-      color: white;
-      background-color: #4c5cf4;
-      border: none;
-      border-radius: 0.5rem;
+    .avatar-container {
+      position: relative;
       cursor: pointer;
-      transition: background-color 0.3s ease;
-
-      &:hover {
-        background-color: #3b4cd1;
+      
+      .avatar {
+        height: 3.2rem;
+        width: 3.2rem;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.2s ease;
+        
+        &:hover {
+          border-color: rgba(255, 255, 255, 0.4);
+          transform: scale(1.05);
+        }
+      }
+      
+      .online-indicator.self {
+        position: absolute;
+        bottom: 0.35rem;
+        right: 0;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background-color: #00c853;
+        border: 2px solid rgba(8, 4, 32, 0.9);
       }
     }
-  }
 
-  @media screen and (max-width: 720px) {
-    flex-direction: column;
-    align-items: center;
-
-    .username h2 {
-      font-size: 1rem;
+    .user-info {
+      flex: 1;
+      min-width: 0;
+      
+      .username {
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0 0 0.2rem 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      .status {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.85rem;
+        margin: 0;
+      }
     }
 
     .actions {
-      justify-content: center;
+      display: flex;
+      align-items: center;
     }
   }
-}
 
-  @media screen and (max-width: 720px) {
-    border-radius: 0;
+  @media screen and (max-width: 768px) {
     grid-template-rows: auto auto auto;
+    
+    .brand {
+      padding: 0.8rem;
+      
+      img {
+        height: 2rem;
+      }
+      
+      h3 {
+        font-size: 1.2rem;
+      }
+    }
+    
+    .contacts-header {
+      padding: 0.8rem 1rem 0.4rem;
+      
+      h4 {
+        font-size: 0.8rem;
+      }
+    }
+    
     .contacts {
-      padding: 0.3rem 0;
+      padding: 0.4rem 0.6rem;
+      gap: 0.4rem;
+      
+      .contact {
+        padding: 0.6rem 0.8rem;
+        
+        .avatar-container .avatar {
+          height: 2.4rem;
+          width: 2.4rem;
+        }
+        
+        .contact-info .username {
+          font-size: 0.9rem;
+        }
+      }
     }
-    .brand h3 {
-      font-size: 0.9rem;
-    }
-  }
-
-  .actions {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-
-    .avatar-btn {
-      padding: 0.4rem 0.8rem;
-      font-size: 0.8rem;
-      color: white;
-      background-color: #4c5cf4;
-      border: none;
-      border-radius: 0.5rem;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-
-      &:hover {
-        background-color: #3b4cd1;
+    
+    .current-user {
+      padding: 0.8rem 1rem;
+      
+      .avatar-container .avatar {
+        height: 2.8rem;
+        width: 2.8rem;
+      }
+      
+      .user-info .username {
+        font-size: 1rem;
       }
     }
   }
 
+  @media screen and (max-width: 480px) {
+    .brand {
+      flex-direction: column;
+      gap: 0.4rem;
+      padding: 0.6rem;
+      
+      h3 {
+        font-size: 1rem;
+      }
+    }
+    
+    .current-user {
+      flex-wrap: wrap;
+      justify-content: center;
+      text-align: center;
+      gap: 0.6rem;
+      
+      .user-info {
+        flex-basis: 100%;
+      }
+    }
+  }
 `;
 
-
-const GreenDot = styled.div`
-  div{
-    height:10px;
-    width:10px;
-    border-radius:50%;
-    background-color: #00FF00;
-  }
-
-`
-export default Contacts
+export default Contacts;

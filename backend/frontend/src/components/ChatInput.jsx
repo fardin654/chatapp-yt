@@ -1,86 +1,148 @@
-import React,{useState} from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styled from "styled-components";
 import Picker from 'emoji-picker-react';
 import {IoMdSend} from "react-icons/io";
 import MoodIcon from '@mui/icons-material/Mood';
 import SendIcon from '@mui/icons-material/Send';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
+import MicIcon from '@mui/icons-material/Mic';
 
 function ChatInput({handleSendMessage}) {
-  const [showEmojiPicker,setShowEmojiPicker]=useState(false);
-  const [msg,setMsg]=useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [msg, setMsg] = useState("");
+  const emojiPickerRef = useRef();
 
   function handleEmojiPickerShow(){
     setShowEmojiPicker(!showEmojiPicker);
   }
 
   function handleEmojiClick(event){
-    let message = msg;
-    message+=event.emoji;
-    setMsg(message);
+    setMsg(prevMsg => prevMsg + event.emoji);
   }
 
   function sendChat(event){
     event.preventDefault();
-    if(msg.length>0){
+    if(msg.trim().length > 0){
       handleSendMessage(msg);
       setMsg("");
     }
   }
-  
+
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+        setShowEmojiPicker(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <Container>
+      <div className="input-wrapper">
+        <div className="action-buttons">
+          <button className="action-btn">
+            <AttachFileIcon />
+          </button>
+          <button className="action-btn">
+            <MicIcon />
+          </button>
+        </div>
+        
         <form className="input-container" onSubmit={sendChat}>
-          <div className="emoji">
-            <MoodIcon onClick={handleEmojiPickerShow}/>
-            {showEmojiPicker && <Picker className="emoji-picker-react" onEmojiClick={handleEmojiClick}/>}
+          <div className="emoji" ref={emojiPickerRef}>
+            <button type="button" className="emoji-btn" onClick={handleEmojiPickerShow}>
+              <MoodIcon />
+            </button>
+            {showEmojiPicker && (
+              <div className="emoji-picker-wrapper">
+                <Picker onEmojiClick={handleEmojiClick} />
+              </div>
+            )}
           </div>
-          <input type="text" placeholder="Type your message here" value={msg} onChange={(e)=>setMsg(e.target.value)}/>
-          <button className="submit">
-            <SendIcon/>
+          
+          <input 
+            type="text" 
+            placeholder="Type your message here" 
+            value={msg} 
+            onChange={(e) => setMsg(e.target.value)}
+            onFocus={() => setShowEmojiPicker(false)}
+          />
+          
+          <button type="submit" className="submit" disabled={!msg.trim()}>
+            <SendIcon />
           </button>
         </form>
-
+      </div>
     </Container>
   )
 }
 
 const Container = styled.div`
-  /* 🎨 CSS Variables for easy theming and consistency */
-  --primary-color: #9a86f3;
-  --primary-color-hover: #7c6ee7;
-  --bg-dark: #080420;
-  --bg-picker: #0b0523;
-  --bg-input: #ffffff24;
-  --text-color: #ffffff;
-  --placeholder-color: #ccc;
-  --shadow-color: #9a86f3aa;
-  --input-height: 2.8rem;
-
   display: flex;
   align-items: center;
-  background-color: var(--bg-dark);
-  padding: 0.5rem 2rem;
-  position: relative;
-  bottom:0.2rem;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.8rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 
-  @media screen and (max-width: 720px) {
-    padding: 0.5rem 1rem;
+  @media screen and (max-width: 768px) {
+    padding: 0.6rem 1rem;
+  }
+
+  .input-wrapper {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+
+      &:hover {
+        color: white;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      svg {
+        font-size: 1.3rem;
+      }
+    }
   }
 
   .input-container {
-    width: 100%;
-    height: var(--input-height);
-    border-radius: 2rem;
+    flex: 1;
+    height: 3rem;
+    border-radius: 24px;
     display: flex;
     align-items: center;
-    gap: 1rem;
-    background-color:white;
-    padding: 0 0.5rem 0 1rem;
-    transition: box-shadow 0.3s ease;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 0 0.8rem;
+    transition: all 0.3s ease;
+    position: relative;
 
-    /* ✨ Improved accessibility with a clear focus state on the entire input area */
     &:focus-within {
-      box-shadow: 0 0 0 2px var(--primary-color);
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 0 0 2px rgba(59, 89, 152, 0.4);
     }
   }
 
@@ -89,101 +151,128 @@ const Container = styled.div`
     display: flex;
     align-items: center;
 
-    svg {
-      font-size: 1.5rem;
-      color: black;
+    .emoji-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
       cursor: pointer;
-      transition: transform 0.2s ease-in-out;
+      padding: 0.3rem;
+      border-radius: 50%;
+      transition: all 0.2s ease;
 
       &:hover {
-        transform: scale(1.1);
+        color: white;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      svg {
+        font-size: 1.4rem;
       }
     }
 
-    /* Targeting the picker via its wrapper for better style encapsulation */
-    .emoji-picker-react {
+    .emoji-picker-wrapper {
       position: absolute;
-      bottom: 50px; /* More space from the input */
-      background-color: var(--bg-picker);
-      box-shadow: 0 5px 15px var(--shadow-color);
-      border: 1px solid var(--primary-color);
-      border-radius: 10px;
-      z-index: 10;
-      
-      /* Consistent scrollbar styling */
-      .emoji-scroll-wrapper::-webkit-scrollbar {
-        width: 5px;
-        background-color: var(--bg-picker);
-        &-thumb {
-          background-color: var(--primary-color);
-          border-radius: 5px;
+      bottom: 100%;
+      left: 0;
+      z-index: 100;
+      margin-bottom: 0.5rem;
+
+      .emoji-picker-react {
+        background: #1e1e2e;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+
+        .emoji-search {
+          background: transparent;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: white;
+          margin-bottom: 10px;
         }
-      }
 
-      .emoji-categories button {
-        filter: contrast(0.5);
-      }
+        .emoji-categories {
+          button {
+            filter: contrast(0.6);
+          }
+        }
 
-      .emoji-search {
-        background-color: transparent;
-        border: 1px solid var(--primary-color);
-        color: var(--text-color);
-      }
+        .emoji-group:before {
+          background: #1e1e2e;
+          color: rgba(255, 255, 255, 0.7);
+        }
 
-      .emoji-group:before {
-        background-color: var(--bg-picker);
+        .emoji-scroll-wrapper::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .emoji-scroll-wrapper::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 3px;
+        }
+
+        .emoji-scroll-wrapper::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 3px;
+        }
       }
     }
   }
 
   input {
     flex: 1;
-    background-color: transparent;
-    color: var(--text-color);
+    background: transparent;
     border: none;
-    font-size: 1.1rem;
-    padding: 0.4rem 0;
-    color: black;
+    color: white;
+    font-size: 0.95rem;
+    padding: 0.5rem 0;
 
-    &::selection {
-      background-color: var(--primary-color);
-    }
-    &:focus {
-      outline: none; /* Focus is now handled by .input-container:focus-within */
-    }
     &::placeholder {
-      color: #555;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    &:focus {
+      outline: none;
     }
   }
 
   button.submit {
-    width: var(--input-height);
-    height: var(--input-height);
-    padding: 0;
-    border-radius: 50%;
-    background-color: var(--primary-color);
-    border: none;
     display: flex;
-    justify-content: center;
     align-items: center;
-    cursor: pointer;
-    transition: background-color 0.0s ease;
-    position: relative;
-    left:0.5rem;
+    justify-content: center;
+    background: ${props => props.disabled ? 'rgba(59, 89, 152, 0.4)' : 'rgba(59, 89, 152, 0.8)'};
+    border: none;
+    color: white;
+    cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    width: 2.2rem;
+    height: 2.2rem;
 
-    &:hover {
-      background-color: var(--primary-color-hover);
+    &:hover:not(:disabled) {
+      background: rgba(59, 89, 152, 1);
+      transform: scale(1.05);
     }
 
     svg {
-      font-size: 1.3rem;
-      color: var(--text-color);
+      font-size: 1.1rem;
     }
+  }
 
-    @media screen and (max-width: 720px) {
-      svg {
-        font-size: 1.1rem;
-      }
+  @media screen and (max-width: 480px) {
+    .action-buttons {
+      display: none;
+    }
+    
+    .input-container {
+      height: 2.8rem;
+    }
+    
+    input {
+      font-size: 0.9rem;
     }
   }
 `;

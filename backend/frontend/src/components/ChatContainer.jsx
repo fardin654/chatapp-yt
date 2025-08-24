@@ -4,11 +4,41 @@ import ChatInput from "../components/ChatInput";
 import axios from "axios";
 import { sendMessageRoute, getAllMessagesRoute } from "../utils/APIRoutes";
 import { v4 as uuidv4 } from "uuid";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
+import { io } from "socket.io-client";
+import { host } from "../utils/APIRoutes";
+import { toast, ToastContainer } from 'react-toastify';
 
-function ChatContainer({ currentChat, currentUser, socket }) {
+
+function ChatContainer({ currentChat, currentUser, socket, handleToggle }) {
   const [messages, setMessages] = useState([]);
   const [arrivalMessage, setArrivalMessage] = useState(null);
+  const [onlineUsers, setOnlineUsers] = useState({});
+
+  const toastOptions = {
+    position: "bottom-right",
+    autoClose: 5000,
+    pauseOnHover: true,
+    draggable: true,
+    theme: "dark",
+    closeOnClick: true,
+  };
+
+  useEffect(() => {
+    const socket = io(host);
+    socket.on("onlineUsers", (data) => {
+      setOnlineUsers(data);
+    });
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+  
   const scrollRef = useRef();
+
+
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -55,18 +85,27 @@ function ChatContainer({ currentChat, currentUser, socket }) {
       socket.current.on("msg-received", (msg) => {
         if (msg.from === currentChat._id) {
           setArrivalMessage({
+            from: msg.from,
             fromSelf: false,
             message: msg.message,
             createdAt: new Date(),
           });
+        }else{
+          console.log("New message from another user");
+          toast.info(`New message from ${currentChat.username}`, toastOptions);
         }
       });
-
     }
-  }, [socket]);
+  }, [socket, currentChat]);
 
   useEffect(() => {
-    arrivalMessage && setMessages((prevMessages) => [...prevMessages, arrivalMessage]);
+    if(arrivalMessage){
+      if( arrivalMessage.from === currentChat._id){
+        setMessages((prevMessages) => [...prevMessages, arrivalMessage]);
+      }else{
+        toast.info(`New message from ${currentChat.username}`, toastOptions);
+      }
+    }
   }, [arrivalMessage]);
 
   useEffect(() => {
@@ -96,7 +135,6 @@ function ChatContainer({ currentChat, currentUser, socket }) {
 
   const groupedMessages = groupMessagesByDate(messages);
 
-
   return (
     <>
       {currentChat && (
@@ -106,10 +144,31 @@ function ChatContainer({ currentChat, currentUser, socket }) {
               <div className="avatar">
                 <img src={`data:image/svg+xml;base64,${currentChat.avatarImage}`} alt="avatar" />
               </div>
-              <div className="username">
+              <div className="username-status">
                 <h3>{currentChat.username}</h3>
+                {onlineUsers[currentChat._id] ?<p className="statusOnline">Online</p>:<p className="statusOffline">Offline</p>}
               </div>
             </div>
+            <div className="header-icons">
+              <i className="fas fa-video"></i>
+              <i className="fas fa-phone"></i>
+              <i className="fas fa-ellipsis-v"></i>
+            </div>
+
+            <div className="back-button">
+                <Tooltip title="Back to contacts">
+                  <IconButton
+                    onClick={handleToggle}
+                    sx={{
+                      color: "white",
+                      backgroundColor: "rgba(255,255,255,0.1)",
+                      "&:hover": { backgroundColor: "rgba(255,255,255,0.25)" },
+                    }}
+                  >
+                    <ArrowBackIcon />
+                  </IconButton>
+                </Tooltip>
+              </div>
           </div>
 
           <div className="chat-messages">
@@ -132,6 +191,7 @@ function ChatContainer({ currentChat, currentUser, socket }) {
             ))}
           </div>
           <ChatInput handleSendMessage={handleSendMessage} />
+          <ToastContainer />
         </Container>
       )}
     </>
@@ -139,114 +199,183 @@ function ChatContainer({ currentChat, currentUser, socket }) {
 }
 
 const Container = styled.div`
-  border-top-right-radius: 10px;
-  border-bottom-right-radius: 10px;
+  border-radius: 16px;
   display: grid;
-  grid-template-rows: 10% 80% 10%;
-  gap: 0.1rem;
+  grid-template-rows: 70px 1fr 80px;
+  height: 100%;
   overflow: hidden;
-  backdrop-filter: blur(3px);
-  background-color: transparent;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 
-  @media screen and (min-width: 720px) and (max-width: 1080px) {
-    grid-template-rows: 15% 70% 15%;
+  @media screen and (max-width: 768px) {
+    border-radius: 0;
+    border: none;
   }
+
   .chat-header {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    padding: 0.5rem;
-    border-bottom: 2px solid white;
-    padding-top: 1.5rem;
-    hright: 5rem;
-    background-filter: blur(3px);
+    padding: 0 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    
     .user-details {
       display: flex;
       align-items: center;
       gap: 1rem;
-      position: relative;
+      
       .avatar {
-        height: 3rem;
-        width: 3rem;
+        height: 40px;
+        width: 40px;
         border-radius: 50%;
+        overflow: hidden;
         display: flex;
         justify-content: center;
-        background-color:gray;
-        border: 2px solid white;
-        position: relative;
-        bottom: 0.4rem;
+        align-items: center;
+        background: linear-gradient(135deg, #3b5998, #2d4373);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        
         img {
-          height: 2.5rem;
+          height: 36px;
+          width: 36px;
+          object-fit: cover;
+          border-radius: 50%;
         }
+
+        .back-button {
+          display: none;
+        }
+
       }
-      .username {
+      
+      .username-status {
         h3 {
           color: white;
-          position: relative;
-          bottom: 0.2rem;
+          margin: 0;
+          font-size: 1.1rem;
+          font-weight: 600;
+        }
+        
+        .statusOnline {
+          color: #00c853;
+          margin: 0;
+          font-size: 0.8rem;
+        }
+        .statusOffline {
+          color: #d72020ff;
+          margin: 0;
+          font-size: 0.8rem;
+        }
+      }
+    }
+    
+    .header-icons {
+      display: flex;
+      gap: 1.2rem;
+      color: rgba(255, 255, 255, 0.7);
+      
+      i {
+        cursor: pointer;
+        transition: color 0.2s;
+        
+        &:hover {
+          color: white;
         }
       }
     }
   }
+  
   .chat-messages {
-    padding: 1rem 2rem;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.8rem;
     overflow: auto;
+    
     &::-webkit-scrollbar {
-      width: 0.2rem;
-      &-thumb {
-        background-color: grey;
-        width: 0.1rem;
-        border-radius: 1rem;
-      }
+      width: 6px;
     }
+    
+    &::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+    }
+    
     .date-separator {
       text-align: center;
-      margin: 1rem 0;
+      margin: 0.5rem 0;
+      
       span {
-        background-color: #d1d1d1;
-        padding: 0.2rem 1rem;
-        border-radius: 1rem;
-        color: #000;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.4rem 1.2rem;
+        border-radius: 20px;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.8rem;
+        font-weight: 500;
       }
     }
+    
     .message {
       display: flex;
-      align-items: center;
-      margin: 0.1rem 0;
+      margin: 0.2rem 0;
+      
       .content {
-        max-width: 40%;
+        max-width: 65%;
         overflow-wrap: break-word;
-        padding: 0.8rem;
-        font-size: 1.1rem;
-        border-radius: 1rem;
-        color: #d1d1d1;
-        @media screen and (min-width: 720px) and (max-width: 1080px) {
-          max-width: 70%;
-        }
+        padding: 0.7rem 1rem;
+        font-size: 0.95rem;
+        border-radius: 18px;
+        position: relative;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        
         p {
-          display: inline-block;
+          margin: 0;
+          line-height: 1.4;
         }
+        
         .timeStamp {
-          color: grey;
-          font-size: 10px;
-          margin-left: 5px;
+          font-size: 0.7rem;
+          margin: 0;
+          margin-top: 4px;
+          text-align: right;
+          opacity: 0.8;
         }
       }
     }
+    
     .sended {
       justify-content: flex-end;
+      
       .content {
-        background-color:  #3b5998;
+        background: linear-gradient(135deg, #3b5998, #2d4373);
+        color: white;
+        border-bottom-right-radius: 5px;
+        
+        .timeStamp {
+          color: rgba(255, 255, 255, 0.7);
+        }
       }
     }
+    
     .received {
       justify-content: flex-start;
+      
       .content {
-        background-color: rgb(32, 40, 41);
-        color: #ffffff;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border-bottom-left-radius: 5px;
+        
+        .timeStamp {
+          color: rgba(255, 255, 255, 0.7);
+        }
       }
     }
   }
