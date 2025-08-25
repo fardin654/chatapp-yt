@@ -12,7 +12,7 @@ import { host } from "../utils/APIRoutes";
 import { toast, ToastContainer } from 'react-toastify';
 
 
-function ChatContainer({ currentChat, currentUser, socket, handleToggle }) {
+function ChatContainer({ currentChat, currentUser, socket, handleToggle, handleToast }) {
   const [messages, setMessages] = useState([]);
   const [arrivalMessage, setArrivalMessage] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState({});
@@ -68,6 +68,7 @@ function ChatContainer({ currentChat, currentUser, socket, handleToggle }) {
     socket.current.emit("send-msg", {
       to: currentChat._id,
       from: currentUser._id,
+      fromName: currentUser.username,
       message: messageContent,
     });
 
@@ -84,6 +85,7 @@ function ChatContainer({ currentChat, currentUser, socket, handleToggle }) {
     if (socket.current) {
       socket.current.on("msg-received", (msg) => {
         if (msg.from === currentChat._id) {
+          console.log("Arrived...")
           setArrivalMessage({
             from: msg.from,
             fromSelf: false,
@@ -91,8 +93,8 @@ function ChatContainer({ currentChat, currentUser, socket, handleToggle }) {
             createdAt: new Date(),
           });
         }else{
-          console.log("New message from another user");
-          toast.info(`New message from ${currentChat.username}`, toastOptions);
+          handleToast(msg.fromName);
+
         }
       });
     }
@@ -103,7 +105,7 @@ function ChatContainer({ currentChat, currentUser, socket, handleToggle }) {
       if( arrivalMessage.from === currentChat._id){
         setMessages((prevMessages) => [...prevMessages, arrivalMessage]);
       }else{
-        toast.info(`New message from ${currentChat.username}`, toastOptions);
+        // toast.info(`New message from ${arrivalMessage.fromName}`, toastOptions);
       }
     }
   }, [arrivalMessage]);

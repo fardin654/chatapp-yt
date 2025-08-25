@@ -7,6 +7,8 @@ import Contacts from "../components/Contacts";
 import Welcome from "../components/Welcome";
 import ChatContainer from "../components/ChatContainer";
 import { io } from "socket.io-client";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Chat() {
   const navigate = useNavigate();
@@ -16,6 +18,15 @@ function Chat() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
   const socket = useRef();
+
+  const toastOptions = {
+    position: "bottom-right",
+    autoClose: 5000,
+    pauseOnHover: true,
+    draggable: true,
+    theme: "dark",
+    closeOnClick: true,
+  };
 
   // detect screen size
   useEffect(() => {
@@ -71,6 +82,10 @@ function Chat() {
     setCurrentChat(undefined);
   }
 
+  function handleToast(msg) {
+    toast.info(`New Message From ${msg}`, toastOptions);
+  }
+
   return (
     <Container>
       <div className="container">
@@ -91,6 +106,7 @@ function Chat() {
                 currentUser={currentUser}
                 socket={socket}
                 handleToggle = {handleToggle}
+                handleToast= {handleToast}
               />
             )}
           </>
@@ -117,6 +133,7 @@ function Chat() {
           </>
         )}
       </div>
+      <ToastContainer />
     </Container>
   );
 }

@@ -113,7 +113,14 @@ function Register() {
             <BrandContainer>
               <LogoContainer>
                 <Logo src={logo} alt="YouChat Logo" />
-                <Typography variant="h3" component="h3" color="white" fontWeight="500" gutterBottom sx={{ fontSize: '1.8rem'}}>
+                <Typography variant="h3" component="h3" color="white" fontWeight="500" gutterBottom sx={{
+                      fontSize: "1.8rem",
+                      fontWeight: 700,
+                      letterSpacing: "0.5px",
+                      background: "linear-gradient(135deg, #ffffff, #9a86f3)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                    }}>
                   YouChat
                 </Typography>
               </LogoContainer>

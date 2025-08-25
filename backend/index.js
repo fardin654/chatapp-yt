@@ -83,6 +83,7 @@ io.on("connection",(socket)=>{
             };
             io.to(sendUserSocket).emit("msg-received", {
                 from: data.from,
+                fromName: data.fromName,
                 message: data.message,
             });
 
